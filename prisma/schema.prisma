@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement()) @db.Int
+  name      String   @unique @db.VarChar(191)
+  email     String   @unique @db.VarChar(191)
+  role_id   Int      @default(1) @db.Int
+  image     String   @db.VarChar(191)
+  password  String   @db.VarChar(191)
+  slug      String?  @unique @db.VarChar(191) // URL slug para usuarios tipo 'user'
+  createdAt DateTime @default(now()) @db.DateTime(3)
+
+  // Relación con Role
+  role Role @relation(fields: [role_id], references: [id])
+  
+  // Relación con Podcast
+  podcasts Podcast[]
+}
+
+model Role {
+  id        Int      @id @default(autoincrement()) @db.Int
+  name      String   @unique @db.VarChar(191)
+  createdAt DateTime @default(now()) @db.DateTime(3)
+
+  // Relación con User
+  users User[]
+}
+
+model Podcast {
+  id          Int      @id @default(autoincrement()) @db.Int
+  user_id     Int      @db.Int
+  name        String   @unique @db.VarChar(191)
+  url         String   @db.VarChar(191)
+  description String   @db.VarChar(191)
+  createdAt   DateTime @default(now()) @db.DateTime(3)
+
+  // Relación con User
+  user User @relation(fields: [user_id], references: [id])
+}

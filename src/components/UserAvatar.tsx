@@ -6,7 +6,7 @@ import { useState } from "react"
 interface UserAvatarProps {
   src?: string
   alt: string
-  size?: "small" | "medium" | "large"
+  size?: "small" | "medium" | "large" | "xl"
   className?: string
 }
 
@@ -16,7 +16,8 @@ export default function UserAvatar({ src, alt, size = "medium", className = "" }
   const sizeClasses = {
     small: "w-8 h-8",
     medium: "w-12 h-12", 
-    large: "w-16 h-16"
+    large: "w-16 h-16",
+    xl: "w-24 h-24"
   }
 
   const handleError = () => {

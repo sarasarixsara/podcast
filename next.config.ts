@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
     basePath: "/podcast",
     assetPrefix: "/podcast",
   }),
+  
   trailingSlash: true,
   images: {
     remotePatterns: [

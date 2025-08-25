@@ -28,6 +28,8 @@ model User {
   
   // Relación con Podcast
   podcasts Podcast[]
+    // Relación con Cita
+    citas Cita[]
 }
 
 model Role {
@@ -49,4 +51,34 @@ model Podcast {
 
   // Relación con User
   user User @relation(fields: [user_id], references: [id])
+}
+
+// Enum para el estado de la cita
+enum CitaState {
+  pendiente
+  rechazada
+  aprobada
+}
+
+model Cita {
+  id                    Int               @id @default(autoincrement()) @db.Int
+  user_id               Int               @db.Int
+  horario_disponible_id Int               @db.Int
+  state                 CitaState
+
+  // Relaciones
+  user             User             @relation(fields: [user_id], references: [id])
+  horarioDisponible HorarioDisponible @relation(fields: [horario_disponible_id], references: [id])
+}
+
+model HorarioDisponible {
+  id          Int      @id @default(autoincrement()) @db.Int
+  date        DateTime @db.DateTime(3)
+  description String?  @db.VarChar(255)
+  duration    Int      @db.Int // duración en minutos
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now()) @db.DateTime(3)
+  
+  // Relación con Cita
+  citas Cita[]
 }

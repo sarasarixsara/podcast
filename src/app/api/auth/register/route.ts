@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         role_id: 2, // Por defecto rol de usuario (no admin)
         image: "https://via.placeholder.com/150", // Imagen por defecto
+        slug: name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''), // Crear slug
       }
     })
 
@@ -57,3 +58,4 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+

@@ -1,26 +1,56 @@
-import { cookies } from "next/headers"
-import jwt from "jsonwebtoken"
+import { cookies } from "next/headers";
+import { prisma } from "@/prisma";
 
-export interface AuthUser {
-  userId: number
-  email: string
-  name: string
-  role: string
+interface TokenPayload {
+  userId: string;
+  email: string;
+  name: string;
+  role_id: number;
+  timestamp: number;
 }
 
-export async function getAuthUser(): Promise<AuthUser | null> {
+export async function getAuthUser() {
   try {
-    const cookieStore = cookies()
-    const token = cookieStore.get("session-token")
-    
+    const cookieStore = cookies();
+    const token = cookieStore.get("session-token")?.value;
+
     if (!token) {
-      return null
+      console.log("No se encontró token de sesión");
+      return null;
     }
 
-    const decoded = jwt.verify(token.value, process.env.NEXTAUTH_SECRET!) as AuthUser
-    return decoded
+    // Decodificar el token (Base64)
+    const decodedData = Buffer.from(token, 'base64').toString();
+    const payload = JSON.parse(decodedData) as TokenPayload;
+    
+    // Verificar si el token ha expirado (7 días)
+    const now = Date.now();
+    const expiryTime = payload.timestamp + (7 * 24 * 60 * 60 * 1000);
+    if (now > expiryTime) {
+      console.log("Token expirado");
+      return null;
+    }
+
+    // Obtener usuario de la base de datos
+    const user = await prisma.user.findUnique({
+      where: { id: parseInt(payload.userId) },
+      include: { role: true }
+    });
+
+    if (!user) {
+      console.log("Usuario no encontrado en la base de datos");
+      return null;
+    }
+
+    return {
+      id: user.id,
+      userId: user.id.toString(),
+      name: user.name,
+      email: user.email,
+      role: user.role.name,
+    };
   } catch (error) {
-    console.error("Error verificando token:", error)
-    return null
+    console.error("Error al verificar la autenticación:", error);
+    return null;
   }
 }

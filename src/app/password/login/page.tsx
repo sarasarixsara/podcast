@@ -1,129 +1,78 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import React, { useState } from "react"
+import AuthForm from "@/components/AuthForm"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
-export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
+const Login: React.FC = () => {
+  const [message, setMessage] = useState("")
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setLoading(true)
-
+  const handleLogin = async (data: { email: string; password: string }) => {
+    setIsLoading(true)
     try {
-      const response = await fetch("/api/auth/login", {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
       })
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
+      const result = await res.json()
+      setMessage(result.message)
 
-      const data = await response.json()
+      if (res.ok) {
+        setIsSuccess(true)
+        // Redirigir al dashboard correspondiente
+        const user = result.user
+        const targetDashboard =
+          user.role_id === 1 ? "/admin/dashboard" : "/user/dashboard"
 
-      if (data.success) {
-        // Redirigir según el rol del usuario
-        if (data.user.role === "admin") {
-          router.push("/admin/dashboard")
-        } else {
-          router.push("/user/dashboard")
-        }
+        setTimeout(() => {
+          router.push(targetDashboard)
+        }, 1000)
       } else {
-        setError(data.message || "Error al iniciar sesión")
+        setIsSuccess(false)
       }
     } catch (error) {
-      console.error("Login error:", error)
-      setError("Error al conectar con el servidor")
+      console.error("Error en login:", error)
+      setMessage("Error de conexión")
+      setIsSuccess(false)
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <div className="text-center">
-            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-              Iniciar Sesión
-            </h2>
-            <p className="mt-2 text-sm text-gray-600">
-              RecTelevision Podcast - Panel de Administración
-            </p>
-          </div>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md w-full max-w-md">
+        {/* AuthForm recibe el submit handler */}
+        <AuthForm mode="Login" onSubmit={handleLogin} />
+
+        {message && (
+          <p
+            className={`text-center mt-4 ${
+              isSuccess ? "text-green-500" : "text-red-500"
+            }`}
+          >
+            {message}
+          </p>
+        )}
+
+        {isLoading && (
+          <p className="text-center mt-4 text-blue-500">Iniciando sesión...</p>
+        )}
+
+        <div className="text-center mt-4">
+          <Link href="/password/signup" className="text-blue-500 hover:underline">
+            ¿No tienes cuenta? Regístrate aquí
+          </Link>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Contraseña
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Contraseña"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
-              {error}
-            </div>
-          )}
-
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-            >
-              {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
-            </button>
-          </div>
-
-          <div className="text-center">
-            <Link
-              href="/password/signup"
-              className="text-indigo-600 hover:text-indigo-500 text-sm"
-            >
-              ¿No tienes cuenta? Regístrate
-            </Link>
-          </div>
-        </form>
       </div>
     </div>
   )
 }
+
+export default Login

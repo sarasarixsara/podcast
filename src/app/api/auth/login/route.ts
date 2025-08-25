@@ -1,90 +1,71 @@
-import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/prisma"
-import bcryptjs from "bcryptjs"
-import { cookies } from "next/headers"
-import jwt from "jsonwebtoken"
+import { NextRequest, NextResponse } from "next/server";
+import { signIn } from "@/auth";
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json()
-    
-    console.log("🔍 Login attempt:", { email, password: "***" })
+    const { email, password } = await request.json();
 
+    // Validaciones
     if (!email || !password) {
-      console.log("❌ Missing credentials")
       return NextResponse.json(
-        { success: false, message: "Email y contraseña son requeridos" },
+        { message: "Email y contraseña son requeridos" },
         { status: 400 }
-      )
+      );
     }
 
-    // Buscar usuario por email
-    const user = await prisma.user.findUnique({
-      where: { email },
-      include: { role: true }
-    })
+    console.log("Intentando iniciar sesión para:", email);
 
-    console.log("👤 User found:", user ? { id: user.id, email: user.email, role: user.role.name } : "null")
+    // Intentar iniciar sesión
+    const result = await signIn(email, password);
+    console.log("Resultado de autenticación:", result);
 
-    if (!user) {
-      console.log("❌ User not found")
+    if (result.success && result.user) {
+      // Crear token simple (Base64)
+      const tokenPayload = {
+        userId: result.user.id,
+        email: result.user.email,
+        name: result.user.name,
+        role_id: result.user.role_id,
+        timestamp: Date.now(),
+      };
+
+      const token = Buffer.from(JSON.stringify(tokenPayload)).toString("base64");
+
+      // Crear respuesta
+      const response = NextResponse.json(
+        {
+          message: "Inicio de sesión exitoso",
+          user: result.user,
+        },
+        { status: 200 }
+      );
+
+      // Configurar cookie
+      response.cookies.set("session-token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 7, // 7 días
+        path: "/",
+      });
+
+      return response;
+    } else {
       return NextResponse.json(
-        { success: false, message: "Credenciales inválidas" },
+        { message: result.message || "Credenciales inválidas" },
         { status: 401 }
-      )
+      );
     }
-
-    // Verificar contraseña
-    const isPasswordValid = await bcryptjs.compare(password, user.password)
-    console.log("🔑 Password valid:", isPasswordValid)
-
-    if (!isPasswordValid) {
-      console.log("❌ Invalid password")
-      return NextResponse.json(
-        { success: false, message: "Credenciales inválidas" },
-        { status: 401 }
-      )
-    }
-
-    // Crear token JWT
-    const token = jwt.sign(
-      {
-        userId: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role.name
-      },
-      process.env.NEXTAUTH_SECRET!,
-      { expiresIn: "7d" }
-    )
-
-    console.log("✅ Login successful for:", user.email)
-
-    // Configurar cookie
-    const cookieStore = cookies()
-    cookieStore.set("session-token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 // 7 días
-    })
-
-    // Retornar éxito con información del usuario
-    return NextResponse.json({
-      success: true,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role.name
-      }
-    })
-
   } catch (error) {
-    console.error("❌ Error en login:", error)
+    console.error("Error detallado en login:", error);
     return NextResponse.json(
-      { success: false, message: "Error interno del servidor" },
+      {
+        message: "Error interno del servidor",
+        error: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
-    )
+    );
   }
 }
+
+

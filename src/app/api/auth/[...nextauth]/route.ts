@@ -1,3 +1,1 @@
-import { handlers } from "@/auth"
-
-export const { GET, POST } = handlers
+// This file has been removed - delete this file from your project

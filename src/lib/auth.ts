@@ -11,8 +11,9 @@ interface TokenPayload {
 
 export async function getAuthUser() {
   try {
-    const cookieStore = cookies();
-    const token = cookieStore.get("session-token")?.value;
+    // Get cookies list and retrieve the session token
+    const cookiesList = await cookies();
+    const token = cookiesList.get("session-token")?.value;
 
     if (!token) {
       console.log("No se encontró token de sesión");

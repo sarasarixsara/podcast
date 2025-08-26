@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 
 interface User {
@@ -18,6 +17,14 @@ interface CreatePodcastForm {
   user_id: string
 }
 
+// Add this interface for the API response user type
+interface UserWithRole extends User {
+  role: {
+    id: number;
+    name: string;
+  }
+}
+
 export default function CreatePodcastPage() {
   const [formData, setFormData] = useState<CreatePodcastForm>({
     name: "",
@@ -30,7 +37,6 @@ export default function CreatePodcastPage() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState("")
   const [loadingUsers, setLoadingUsers] = useState(true)
-  const router = useRouter()
 
   // Cargar usuarios tipo 'user' al montar el componente
   useEffect(() => {
@@ -43,20 +49,22 @@ export default function CreatePodcastPage() {
       const data = await response.json()
       
       if (response.ok) {
-        // Filtrar solo usuarios tipo 'user'
-        const userTypeUsers = data.users.filter((user: any) => user.role.name === "user")
+        // Use the proper type instead of any
+        const userTypeUsers = data.users.filter((user: UserWithRole) => user.role.name === "user")
         setUsers(userTypeUsers)
       } else {
         setError("Error al cargar usuarios")
       }
-    } catch (error) {
+    } catch (err) {
+      // Changed from error to err to avoid the unused variable warning
+      console.log(err)
       setError("Error al conectar con el servidor")
     } finally {
       setLoadingUsers(false)
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError("")
     setSuccess("")
@@ -97,7 +105,8 @@ export default function CreatePodcastPage() {
       } else {
         setError(data.message || "Error al crear podcast")
       }
-    } catch (error) {
+    } catch (err) {
+      console.error("Error al crear podcast:", err)
       setError("Error al conectar con el servidor")
     } finally {
       setLoading(false)
@@ -255,3 +264,4 @@ export default function CreatePodcastPage() {
     </div>
   )
 }
+

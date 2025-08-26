@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import UserAvatar from "@/components/UserAvatar"
 
 interface Podcast {
   id: number
@@ -222,3 +221,4 @@ export default function UserPodcastClient({ user }: UserPodcastClientProps) {
     </div>
   )
 }
+

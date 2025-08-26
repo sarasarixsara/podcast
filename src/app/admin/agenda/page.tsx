@@ -2,7 +2,7 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { getAuthUser } from "@/lib/auth"
 import { prisma } from "@/prisma"
-import DeleteButton from "@/components/DeleteButton"
+// import DeleteButton from "@/components/DeleteButton"
 
 export default async function AdminAgenda() {
   const user = await getAuthUser()
@@ -25,18 +25,18 @@ export default async function AdminAgenda() {
   })
 
   // Obtener todos los horarios disponibles
-  const horariosDisponibles = await prisma.horarioDisponible.findMany({
-    orderBy: {
-      date: "asc"
-    },
-    include: {
-      citas: {
-        include: {
-          user: true
-        }
-      }
-    }
-  })
+  // const horariosDisponibles = await prisma.horarioDisponible.findMany({
+  //   orderBy: {
+  //     date: "asc"
+  //   },
+  //   include: {
+  //     citas: {
+  //       include: {
+  //         user: true
+  //       }
+  //     }
+  //   }
+  // })
 
   // Estadísticas de citas
   const citasAprobadas = citas.filter(cita => cita.state === "aprobada").length

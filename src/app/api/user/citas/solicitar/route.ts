@@ -5,6 +5,16 @@ import jwt from 'jsonwebtoken'
 
 const prisma = new PrismaClient()
 
+// Define a proper interface for the JWT decoded token
+interface DecodedToken {
+  id: number;
+  email: string;
+  name?: string;
+  role: string;
+  iat?: number;
+  exp?: number;
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Verificar autenticación
@@ -15,10 +25,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    let decoded: any
+    let decoded: DecodedToken
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'default_secret')
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'default_secret') as DecodedToken
     } catch (error) {
+      console.error('Error al verificar el token:', error)
       return NextResponse.json({ error: 'Token inválido' }, { status: 401 })
     }
 
@@ -28,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Obtener datos del formulario
-    const formData = await request.formData()
+    const formData = await request.formData() as FormData;
     const horario_id = formData.get('horario_id') as string
 
     if (!horario_id) {
@@ -89,8 +100,8 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     )
 
-  } catch (error) {
-    console.error('Error al solicitar cita:', error)
+  } catch (err) {
+    console.error("Error al solicitar cita:", err);
     return NextResponse.json(
       { error: 'Error interno del servidor' }, 
       { status: 500 }

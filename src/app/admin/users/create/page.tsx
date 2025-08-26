@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 
 interface CreateUserForm {
@@ -25,7 +24,6 @@ export default function CreateUserPage() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState("")
-  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -83,7 +81,8 @@ export default function CreateUserPage() {
       } else {
         setError(data.message || "Error al crear usuario")
       }
-    } catch (error) {
+    } catch (err) {
+      console.error("Error al crear usuario:", err);
       setError("Error al conectar con el servidor")
     } finally {
       setLoading(false)
@@ -282,3 +281,4 @@ export default function CreateUserPage() {
     </div>
   )
 }
+

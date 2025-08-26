@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { prisma } from "@/prisma"
 import { getAuthUser } from "@/lib/auth"
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Verificar que el usuario sea admin
     const authUser = await getAuthUser()

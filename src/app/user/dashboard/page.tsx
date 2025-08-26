@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation"
 import { getAuthUser } from "@/lib/auth"
 import { prisma } from "@/prisma"
-import Link from "next/link"
+// import Link from "next/link"
+
+// Añade esta línea para marcar la página como dinámica
+export const dynamic = 'force-dynamic';
 
 export default async function UserDashboard() {
   const user = await getAuthUser()
@@ -398,3 +401,4 @@ export default async function UserDashboard() {
     </div>
   )
 }
+

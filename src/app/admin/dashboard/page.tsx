@@ -1,6 +1,8 @@
+"use client"
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import { getAuthUser } from "@/lib/auth"
+// import { getAuthUser } from "@/lib/auth"
+import { getAuthUser } from "@/lib/auth-static"
 import { prisma } from "@/prisma"
 
 export default async function AdminDashboard() {

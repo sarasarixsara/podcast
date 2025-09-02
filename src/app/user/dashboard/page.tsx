@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation"
-import { getAuthUser } from "@/lib/auth"
+"use client"
+// import { getAuthUser } from "@/lib/auth"
+import { getAuthUser } from "@/lib/auth-static"
 import { prisma } from "@/prisma"
 // import Link from "next/link"
 

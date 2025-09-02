@@ -1,6 +1,8 @@
+"use client"
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/prisma"
-import { getAuthUser } from "@/lib/auth"
+// import { getAuthUser } from "@/lib/auth"
+import { getAuthUser } from "@/lib/auth-static"
 import bcryptjs from "bcryptjs"
 
 export async function POST(request: NextRequest) {

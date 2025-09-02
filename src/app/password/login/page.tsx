@@ -4,6 +4,7 @@ import React, { useState } from "react"
 import AuthForm from "@/components/AuthForm"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { setAuthUser } from "@/lib/auth-static" // Importa la nueva función
 
 const Login: React.FC = () => {
   const [message, setMessage] = useState("")
@@ -14,27 +15,51 @@ const Login: React.FC = () => {
   const handleLogin = async (data: { email: string; password: string }) => {
     setIsLoading(true)
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      })
+      // Para versión estática, simulamos una API
+      // En producción podrías usar una API externa o serverless function
+      const mockUsers = [
+        {
+          id: 1,
+          name: "Admin User",
+          email: "admin@example.com",
+          password: "admin123",
+          role_id: 1,
+        },
+        {
+          id: 2,
+          name: "Regular User",
+          email: "user@example.com",
+          password: "user123",
+          role_id: 2,
+        },
+      ]
 
-      const result = await res.json()
-      setMessage(result.message)
+      const user = mockUsers.find(
+        (u) => u.email === data.email && u.password === data.password
+      )
 
-      if (res.ok) {
+      if (user) {
+        // Guardar en localStorage - no need to destructure since we're not using the variables
+        setAuthUser({
+          id: user.id,
+          userId: user.id.toString(),
+          name: user.name,
+          email: user.email,
+          role: user.role_id === 1 ? "admin" : "user",
+        })
+
         setIsSuccess(true)
+        setMessage("Inicio de sesión exitoso")
+
         // Redirigir al dashboard correspondiente
-        const user = result.user
         const targetDashboard =
           user.role_id === 1 ? "/admin/dashboard" : "/user/dashboard"
-
         setTimeout(() => {
           router.push(targetDashboard)
         }, 1000)
       } else {
         setIsSuccess(false)
+        setMessage("Credenciales inválidas")
       }
     } catch (error) {
       console.error("Error en login:", error)
@@ -76,3 +101,4 @@ const Login: React.FC = () => {
 }
 
 export default Login
+

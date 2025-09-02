@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   ...(isDevelopment ? {} : {
     basePath: "/podcast",
     assetPrefix: "/podcast",
+    output: 'export'  // Restauramos esta opción para generar la carpeta out
   }),
   
   trailingSlash: true,
@@ -55,6 +56,7 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       }
     ],
+    unoptimized: true, // Añadimos esta opción para exportación estática
   },
 };
 

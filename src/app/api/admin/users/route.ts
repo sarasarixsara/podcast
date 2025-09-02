@@ -1,6 +1,8 @@
+"use client"
 import { NextResponse } from "next/server"
 import { prisma } from "@/prisma"
-import { getAuthUser } from "@/lib/auth"
+// import { getAuthUser } from "@/lib/auth"
+import { getAuthUser } from "@/lib/auth-static"
 
 export async function GET() {
   try {
